@@ -1,1 +1,247 @@
-<h1>endter的</h1>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>烟花爆竹效果</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background-color: black;
+    }
+    canvas {
+      display: block;
+    }
+    .message-container {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      display: flex;
+      justify-content: space-between; /* 左右分布 */
+      width: 80%;  /* 控制整体宽度 */
+      text-align: center;
+      z-index: 9999;
+      pointer-events: none;
+    }
+    .message {
+      color: white;
+      font-size: 24px;
+      font-family: 'Arial', sans-serif;
+      font-weight: bold;
+      margin-bottom: 10px;
+      opacity: 1;
+      animation: fadeIn 1s forwards, fadeOut 3s 3s forwards;
+      pointer-events: none;
+      display: block;
+      white-space: nowrap;  /* Prevent text wrapping */
+    }
+    .left-column, .right-column {
+      width: 45%;  /* 每列宽度 */
+    }
+    @keyframes fadeIn {
+      0% {
+        opacity: 0;
+      }
+      100% {
+        opacity: 1;
+      }
+    }
+    @keyframes fadeOut {
+      0% {
+        opacity: 1;
+      }
+      100% {
+        opacity: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+<canvas id="fireworkCanvas"></canvas>
+<div class="message-container"></div>
+
+<!-- 背景音乐 -->
+<audio id="backgroundMusic" src="周杰伦 - 花海.mp3" preload="auto" loop></audio>
+
+<!-- 烟花爆炸音效 -->
+<audio id="fireworkSound" src="072007_fireworks-47593.mp3" preload="auto"></audio>
+
+<script>
+  const canvas = document.getElementById('fireworkCanvas');
+  const ctx = canvas.getContext('2d');
+  const messageContainer = document.querySelector('.message-container');
+
+  const message = "李正航💖王玉花，平安喜乐，祝你祝我祝我们";  // 文字内容直接写成一个字符串
+
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  // 通过点击播放音频
+  const backgroundMusic = document.getElementById('backgroundMusic');
+  const fireworkSound = document.getElementById('fireworkSound');
+
+  // 监听点击事件，确保在用户点击后播放音频
+  canvas.addEventListener('click', () => {
+    backgroundMusic.play();  // 用户点击后播放背景音乐
+    fireworkSound.play();  // 用户点击后播放烟花爆炸音效（可以根据需要触发）
+  });
+
+  // 随机数生成器
+  function random(min, max) {
+    return Math.random() * (max - min) + min;
+  }
+
+  // 随机生成颜色
+  function randomColor() {
+    const r = Math.floor(random(150, 255));
+    const g = Math.floor(random(150, 255));
+    const b = Math.floor(random(150, 255));
+    return `rgba(${r}, ${g}, ${b}, 1)`;  // 每次点击会得到不同的颜色
+  }
+
+  // 烟花构造函数
+  function Firework(x, y) {
+    this.x = x;
+    this.y = y;
+    this.size = random(5, 7);  // 烟花的初始大小
+    this.particles = [];
+    this.isExploded = false;  // 是否已经爆炸
+    this.vy = -6;  // 上升的速度
+    this.gravity = 0.1;  // 重力，使烟花逐渐减速
+    this.color = randomColor();  // 产生随机颜色
+    this.maxHeight = random(20, 50);  // 烟花上升的最大高度
+    this.initialY = y;  // 保存初始位置
+  }
+
+  // 绘制烟花粒子
+  Firework.prototype.draw = function () {
+    if (this.isExploded) {
+      this.particles.forEach(p => {
+        ctx.globalAlpha = p.alpha;
+        ctx.fillStyle = p.color;  // 粒子颜色
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fill();
+      });
+    } else {
+      // 绘制上升的烟花
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = this.color;
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  };
+
+  // 更新烟花状态
+  Firework.prototype.update = function () {
+    if (!this.isExploded) {
+      this.y += this.vy;  // 烟花上升
+      this.vy += this.gravity;  // 受重力影响，速度逐渐减缓
+
+      // 到达最大高度后爆炸
+      if (this.y <= this.initialY - this.maxHeight) {
+        this.explode();
+      }
+    } else {
+      this.particles.forEach(p => {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.alpha -= 0.02;  // 粒子逐渐消失
+      });
+      this.particles = this.particles.filter(p => p.alpha > 0);  // 移除透明粒子
+    }
+  };
+
+  // 烟花爆炸
+  Firework.prototype.explode = function () {
+    const particleCount = 300;  // 增加粒子数量
+    for (let i = 0; i < particleCount; i++) {
+      const angle = random(0, Math.PI * 2);  // 随机角度
+      const speed = random(4, 10);  // 增加爆炸的速度
+
+      const vx = Math.cos(angle) * speed;
+      const vy = Math.sin(angle) * speed;
+
+      this.particles.push({
+        x: this.x,
+        y: this.y,
+        vx: vx,
+        vy: vy,
+        size: random(2, 5),   // 粒子大小
+        alpha: 1,
+        color: this.color  // 使用相同的颜色
+      });
+    }
+    this.isExploded = true;  // 标记为已爆炸
+
+    // 播放烟花爆炸的声音
+    fireworkSound.play();  // 播放音效
+  };
+
+  const fireworks = [];
+
+  // 点击生成多个烟花
+  canvas.addEventListener('click', e => {
+    for (let i = 0; i < 5; i++) {  // 每次点击产生 5 个烟花
+      fireworks.push(new Firework(e.clientX, e.clientY));
+    }
+  });
+
+  // 生成随机位置的消息
+  function generateRandomMessage() {
+    const messageElement = document.createElement('div');
+    messageElement.classList.add('message');
+
+    // 创建左右两列，分别显示名字和祝福
+    const leftColumn = document.createElement('div');
+    leftColumn.classList.add('left-column');
+    leftColumn.textContent = "李正航💖王玉花";  // 这里填写名字部分
+
+    const rightColumn = document.createElement('div');
+    rightColumn.classList.add('right-column');
+    rightColumn.textContent = "平安喜乐，祝你祝我祝我们";  // 这里填写祝福部分
+
+    // 将名字列和祝福列放入消息元素
+    messageElement.appendChild(leftColumn);
+    messageElement.appendChild(rightColumn);
+
+    messageElement.style.position = 'absolute';
+
+    // 随机设置文字的显示位置
+    messageElement.style.left = `${random(0, window.innerWidth - 400)}px`;  // 随机X坐标，保证不会超出屏幕
+    messageElement.style.top = `${random(0, window.innerHeight - 100)}px`;  // 随机Y坐标，保证不会超出屏幕
+
+    messageContainer.appendChild(messageElement);  // 将消息添加到容器中
+
+    // 设置文字消失的定时器（3秒后消失）
+    setTimeout(() => {
+      messageElement.style.opacity = 0;
+      setTimeout(() => {
+        messageContainer.removeChild(messageElement);
+      }, 1000); // 延时1秒后移除文字元素
+    }, 3000); // 3秒后开始消失
+  }
+
+  // 每次点击生成随机位置的消息
+  canvas.addEventListener('click', generateRandomMessage);
+
+  // 动画循环
+  function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    fireworks.forEach((fw, i) => {
+      fw.update();
+      fw.draw();
+      if (fw.particles.length === 0 && fw.isExploded) {
+        fireworks.splice(i, 1);  // 清除已经爆炸并且粒子为空的烟花
+      }
+    });
+    requestAnimationFrame(animate);  // 重复动画
+  }
+
+  animate();
+</script>
+
+</body>
+</html>
