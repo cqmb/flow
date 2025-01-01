@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <title>烟花爆竹效果</title>
+  <title>新年快乐</title>
   <style>
     body {
       margin: 0;
@@ -73,7 +73,7 @@
   }
 
   // 烟花构造函数
-  function Firework(x, y) {
+  function Firework(x, y, color) {
     this.x = x;
     this.y = y;
     this.size = random(5, 7);
@@ -81,9 +81,10 @@
     this.isExploded = false;
     this.vy = -6;
     this.gravity = 0.1;
-    this.color = randomColor();
+    this.color = color;  // 每个烟花都有不同的颜色
     this.maxHeight = random(20, 50);
     this.initialY = y;
+    this.exploded = false; // 新增标记，避免重复爆炸
   }
 
   // 绘制烟花粒子
@@ -111,7 +112,7 @@
       this.vy += this.gravity;
 
       if (this.y <= this.initialY - this.maxHeight) {
-        this.explode();
+        this.explode();  // 到达最大高度后触发爆炸
       }
     } else {
       this.particles.forEach(p => {
@@ -144,27 +145,34 @@
     }
     this.isExploded = true;
 
+    // 在爆炸时播放烟花音效
     fireworkSound.play();
   };
 
   const fireworks = [];
 
   function triggerFireworks() {
-    fireworks.push(new Firework(random(100, window.innerWidth - 100), window.innerHeight / 2));
+    for (let i = 0; i < 5; i++) {  // 每次点击时生成多个烟花
+      const color = randomColor();  // 每个烟花都有不同颜色
+      fireworks.push(new Firework(random(100, window.innerWidth - 100), window.innerHeight / 2, color));
+    }
   }
 
   // 页面点击触发烟花和文字显示
   document.body.addEventListener('click', function() {
     // 只在第一次点击时播放背景音乐
-    
     backgroundMusic.play();
-    
 
     messageContainer.style.opacity = 1; // 显示文字
 
-    for (let i = 0; i < 5; i++) {
-      setInterval(triggerFireworks, 3000);
-    }
+    // 每次点击时自动触发连续烟花
+    let count = 0;
+    const maxFireworks = 30; // 控制烟花数量
+    const interval = setInterval(() => {
+      triggerFireworks();
+      count++;
+      if (count >= maxFireworks) clearInterval(interval);  // 达到最大数量后停止
+    }, 500);  // 每0.5秒触发一组烟花
   });
 
   function animate() {
