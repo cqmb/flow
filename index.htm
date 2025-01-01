@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <title>烟花爆竹效果</title>
+  <title>新年快乐</title>
   <style>
     body {
       margin: 0;
@@ -81,12 +81,6 @@
   const backgroundMusic = document.getElementById('backgroundMusic');
   const fireworkSound = document.getElementById('fireworkSound');
 
-  // 监听点击事件，确保在用户点击后播放音频
-  canvas.addEventListener('click', () => {
-    backgroundMusic.play();  // 用户点击后播放背景音乐
-    fireworkSound.play();  // 用户点击后播放烟花爆炸音效（可以根据需要触发）
-  });
-
   // 随机数生成器
   function random(min, max) {
     return Math.random() * (max - min) + min;
@@ -156,7 +150,7 @@
 
   // 烟花爆炸
   Firework.prototype.explode = function () {
-    const particleCount = 300;  // 增加粒子数量
+    const particleCount = 1000;  // 增加粒子数量
     for (let i = 0; i < particleCount; i++) {
       const angle = random(0, Math.PI * 2);  // 随机角度
       const speed = random(4, 10);  // 增加爆炸的速度
@@ -182,12 +176,13 @@
 
   const fireworks = [];
 
-  // 点击生成多个烟花
-  canvas.addEventListener('click', e => {
-    for (let i = 0; i < 5; i++) {  // 每次点击产生 5 个烟花
-      fireworks.push(new Firework(e.clientX, e.clientY));
-    }
-  });
+  // 自动播放烟花效果
+  // 自动播放烟花效果
+  function triggerFireworks() {
+    // 触发烟花，y坐标修改为页面高度的中间位置
+    fireworks.push(new Firework(random(100, window.innerWidth - 100), window.innerHeight / 2));  // 改为window.innerHeight / 2
+  }
+
 
   // 生成随机位置的消息
   function generateRandomMessage() {
@@ -197,7 +192,7 @@
     // 创建左右两列，分别显示名字和祝福
     const leftColumn = document.createElement('div');
     leftColumn.classList.add('left-column');
-    leftColumn.textContent = "李正航💖王玉花";  // 这里填写名字部分
+    leftColumn.textContent = "王玉花";  // 这里填写名字部分
 
     const rightColumn = document.createElement('div');
     rightColumn.classList.add('right-column');
@@ -210,8 +205,8 @@
     messageElement.style.position = 'absolute';
 
     // 随机设置文字的显示位置
-    messageElement.style.left = `${random(0, window.innerWidth - 400)}px`;  // 随机X坐标，保证不会超出屏幕
-    messageElement.style.top = `${random(0, window.innerHeight - 100)}px`;  // 随机Y坐标，保证不会超出屏幕
+    messageElement.style.left = `${random(0, window.innerWidth - 10)}px`;  // 随机X坐标，保证不会超出屏幕
+    messageElement.style.top = `${random(0, window.innerHeight - 10)}px`;  // 随机Y坐标，保证不会超出屏幕
 
     messageContainer.appendChild(messageElement);  // 将消息添加到容器中
 
@@ -224,8 +219,24 @@
     }, 3000); // 3秒后开始消失
   }
 
-  // 每次点击生成随机位置的消息
-  canvas.addEventListener('click', generateRandomMessage);
+  // 自动启动所有效果
+  function startAllEffects() {
+    backgroundMusic.play();  // 播放背景音乐
+    for (let i = 0; i < 5; i++) {
+      setInterval(triggerFireworks, 1000);  // 每隔5秒触发一次烟花
+      setInterval(generateRandomMessage, 1000);  // 每隔5秒生成一条祝福消息
+    }
+
+
+
+
+
+  }
+
+  // 页面加载后自动开始
+  window.onload = function() {
+    startAllEffects();
+  };
 
   // 动画循环
   function animate() {
