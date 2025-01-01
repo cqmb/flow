@@ -156,14 +156,14 @@
   // 页面点击触发烟花和文字显示
   document.body.addEventListener('click', function() {
     // 只在第一次点击时播放背景音乐
-    if (backgroundMusic.paused) {
-      backgroundMusic.play();
-    }
+    
+    backgroundMusic.play();
+    
 
     messageContainer.style.opacity = 1; // 显示文字
 
     for (let i = 0; i < 5; i++) {
-      setInterval(triggerFireworks, 2000);
+      setInterval(triggerFireworks, 3000);
     }
   });
 
