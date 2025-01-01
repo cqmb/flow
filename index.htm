@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <title>新年快乐</title>
+  <title>烟花爆竹效果</title>
   <style>
     body {
       margin: 0;
@@ -160,8 +160,10 @@
 
   // 页面点击触发烟花和文字显示
   document.body.addEventListener('click', function() {
-    // 只在第一次点击时播放背景音乐
-    backgroundMusic.play();
+    // 确保背景音乐只有在点击后播放
+    if (backgroundMusic.paused) {
+      backgroundMusic.play();
+    }
 
     messageContainer.style.opacity = 1; // 显示文字
 
@@ -172,7 +174,7 @@
       triggerFireworks();
       count++;
       if (count >= maxFireworks) clearInterval(interval);  // 达到最大数量后停止
-    }, 2000);  // 每0.5秒触发一组烟花
+    }, 500);  // 每0.5秒触发一组烟花
   });
 
   function animate() {
